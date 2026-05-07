@@ -1,0 +1,44 @@
+version: 0.2
+
+# ─────────────────────────────────────────
+# CodeBuild spec ONLY for running DB migrations
+# Set these in CodeBuild Environment Variables:
+#   DB_HOST = your-rds-endpoint.amazonaws.com
+#   DB_PORT = 5432
+#   DB_USER = postgres
+#   DB_PASS = yourpassword
+#   DB_NAME = yourdbname
+# ─────────────────────────────────────────
+
+phases:
+  install:
+    commands:
+      - echo "📦 Installing postgresql client..."
+      - apt-get update -y
+      - apt-get install -y postgresql-client
+
+      - echo "📦 Installing Node dependencies..."
+      - npm ci
+
+    finally:
+      - psql --version
+      - node --version
+
+  pre_build:
+    commands:
+      - echo "🔌 Testing RDS connection..."
+      - PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "SELECT NOW() as connected_at;"
+      - echo "✅ RDS connection successful!"
+
+  build:
+    commands:
+      - echo "🔨 Running migrations..."
+      - cd pwd
+      - ls
+      - node db/migrate.js
+
+  post_build:
+    commands:
+      - echo "📋 Checking migrated tables..."
+      - PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "\dt"
+      - echo "✅ All migrations done!"
