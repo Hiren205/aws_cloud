@@ -27,13 +27,12 @@ phases:
   pre_build:
     commands:
       - echo "🔌 Testing RDS connection..."
-      - PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "SELECT NOW() as connected_at;"
+      - psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "SELECT NOW() as connected_at;"
       - echo "✅ RDS connection successful!"
 
   build:
     commands:
       - echo "🔨 Running migrations..."
-      - cd pwd
       - ls
       - node db/migrate.js
 
