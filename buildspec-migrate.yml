@@ -27,7 +27,7 @@ phases:
   pre_build:
     commands:
       - echo "🔌 Testing RDS connection..."
-      - psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "SELECT NOW() as connected_at;"
+      - PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "SELECT NOW() as connected_at;"
       - echo "✅ RDS connection successful!"
 
   build:
