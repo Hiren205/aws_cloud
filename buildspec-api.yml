@@ -1,0 +1,32 @@
+version: 0.2
+
+# ─────────────────────────────────────────
+# CodeBuild spec for building and deploying to Lambda
+# Set these in CodeBuild Environment Variables:
+#   LAMBDA_FUNCTION_NAME = your-lambda-function-name
+#   AWS_REGION           = eu-west-3
+# ─────────────────────────────────────────
+
+phases:
+  install:
+    commands:
+      - echo "📦 Installing dependencies..."
+      - npm ci
+
+  build:
+    commands:
+      - echo "🔨 Bundling with esbuild..."
+      - npm run build
+      # dist/index.js is now created
+
+      - echo "📦 Zipping dist/index.js..."
+      - cd dist && zip index.zip index.js
+
+  post_build:
+    commands:
+      - echo "🚀 Deploying to Lambda..."
+      - aws lambda update-function-code
+          --function-name $LAMBDA_FUNCTION_NAME
+          --zip-file fileb://dist/index.zip
+          --region $AWS_REGION
+      - echo "✅ Deployed successfully!"
